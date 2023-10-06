@@ -52,7 +52,6 @@ func parse(args []string, terminalInfo terminalInfo) ([]string, Usage, *OptionSe
 	var bodyFlag bool
 	printFlag := "\000" // "\000" is a special value that indicates user did not specified --print
 	timeout := "30s"
-	var authFlag string
 	var prettyFlag string
 	var versionFlag bool
 	var licenseFlag bool
@@ -76,7 +75,6 @@ func parse(args []string, terminalInfo terminalInfo) ([]string, Usage, *OptionSe
 	flagSet.StringVarLong(&verifyFlag, "verify", 0, "verify Host SSL certificate, 'yes' or 'no' ('yes' by default, uppercase is also working)")
 	flagSet.StringVarLong(&timeout, "timeout", 0, "timeout seconds that you allow the whole operation to take")
 	flagSet.BoolVarLong(&exchangeOptions.CheckStatus, "check-status", 0, "Also check the HTTP status code and exit with an error if the status indicates one")
-	flagSet.StringVarLong(&authFlag, "auth", 'a', "colon-separated username and password for authentication")
 	flagSet.StringVarLong(&prettyFlag, "pretty", 0, "controls output formatting (all, format, none)")
 	flagSet.BoolVarLong(&exchangeOptions.FollowRedirects, "follow", 'F', "follow 30x Location redirects")
 	flagSet.BoolVarLong(&versionFlag, "version", 0, "print version and exit")
@@ -141,22 +139,7 @@ func parse(args []string, terminalInfo terminalInfo) ([]string, Usage, *OptionSe
 	}
 
 	// Parse --auth
-	if authFlag != "" {
-		username, password := parseAuth(authFlag)
-
-		if password == nil {
-			p, err := askPassword()
-			if err != nil {
-				return nil, nil, nil, err
-			}
-			password = &p
-		}
-
-		exchangeOptions.Auth.Enabled = true
-		exchangeOptions.Auth.UserName = username
-		exchangeOptions.Auth.Password = *password
-	}
-
+	
 	optionSet := &OptionSet{
 		InputOptions:    inputOptions,
 		ExchangeOptions: exchangeOptions,
@@ -239,13 +222,4 @@ func parseDurationOrSeconds(timeout string) (time.Duration, error) {
 		return time.Duration(0), errors.Errorf("Value of --timeout must be a number or duration string: %v", timeout)
 	}
 	return d, nil
-}
-
-func parseAuth(authFlag string) (string, *string) {
-	colonIndex := strings.Index(authFlag, ":")
-	if colonIndex == -1 {
-		return authFlag, nil
-	}
-	password := authFlag[colonIndex+1:]
-	return authFlag[:colonIndex], &password
 }
