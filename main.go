@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"sync"
+	"syscall/js"
 
 	"github.com/HexmosTech/httpie-go/exchange"
 	"github.com/HexmosTech/httpie-go/flags"
@@ -122,10 +124,57 @@ func getExitStatus(statusCode int) int {
 	return 0
 }
 
+func ExchangeJS() js.Func {
+	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		// Extract arguments from JavaScript
+		// Assuming args[0] is input, args[1] is exchangeOptions, and args[2] is outputOptions
+		// You'll need to adapt this part to your needs
+
+		in := &input.Input{}                   // Convert args[0] to this type
+		exchangeOptions := &exchange.Options{} // Convert args[1] to this type
+		outputOptions := &output.Options{}     // Convert args[2] to this type
+
+		// Handler for the Promise
+		handler := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+			resolve := args[0]
+			reject := args[1]
+
+			// Run this code asynchronously
+			go func() {
+				resp, err := Exchange(in, exchangeOptions, outputOptions)
+				if err != nil {
+					// Handle errors: reject the Promise if we have an error
+					errorConstructor := js.Global().Get("Error")
+					errorObject := errorConstructor.New(err.Error())
+					reject.Invoke(errorObject)
+					return
+				}
+
+				// Convert the Go response to a JavaScript object
+				jsResp := map[string]interface{}{
+					"statusCode": resp.StatusCode,
+					"body":       resp.Body,
+					"headers":    resp.Headers,
+				}
+
+				// Resolve the Promise
+				resolve.Invoke(jsResp)
+			}()
+
+			// The handler of a Promise doesn't return any value
+			return nil
+		})
+
+		// Create and return the Promise object
+		promiseConstructor := js.Global().Get("Promise")
+		return promiseConstructor.New(handler)
+	})
+}
+
 func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions *output.Options) (ExResponse, error) {
 	// Prepare printer
 	log.Info().Msg("Starting Exchange function")
-	
+
 	writer := bufio.NewWriter(os.Stdout)
 	defer writer.Flush()
 
@@ -184,12 +233,42 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 		log.Error().Err(err).Msg("Failed to build HTTP client")
 		return ExResponse{-1, "", map[string]string{}}, err
 	}
-	resp, err := httpClient.Do(request)
-	if err != nil {
+
+	// Create channels for response and error
+	respCh := make(chan *http.Response, 1)
+	errCh := make(chan error, 1)
+
+	// Use a WaitGroup to wait for the goroutine to finish
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		defer wg.Done()
+		resp, err := httpClient.Do(request)
+		if err != nil {
+			errCh <- errors.Wrap(err, "sending HTTP request")
+			return
+		}
+		respCh <- resp
+	}()
+	// Wait for the goroutine to finish
+	wg.Wait()
+	var resp *http.Response
+
+	select {
+	case err = <-errCh:
 		log.Error().Err(err).Msg("Error sending HTTP request")
-		return ExResponse{-1, "", map[string]string{}}, errors.Wrap(err, "sending HTTP request")
+		return ExResponse{-1, "", map[string]string{}}, err
+	case resp = <-respCh:
+		defer resp.Body.Close()
 	}
-	defer resp.Body.Close()
+
+	// resp, err := httpClient.Do(request)
+	// if err != nil {
+	// 	log.Error().Err(err).Msg("Error sending HTTP request")
+	// 	return ExResponse{-1, "", map[string]string{}}, errors.Wrap(err, "sending HTTP request")
+	// }
+	// defer resp.Body.Close()
 
 	if outputOptions.PrintResponseHeader {
 		if err := printer.PrintStatusLine(resp.Proto, resp.Status, resp.StatusCode); err != nil {
