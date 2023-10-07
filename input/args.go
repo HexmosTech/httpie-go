@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
-
+	"github.com/rs/zerolog/log"
 	"github.com/pkg/errors"
 )
 
@@ -49,6 +49,7 @@ func ParseArgs(args []string, stdin io.Reader, options *Options) (*Input, error)
 	var argMethod string
 	var argURL string
 	var argItems []string
+	log.Info().Interface("ParseArgs", args).Msg("ParseArgs")
 	switch len(args) {
 	case 0:
 		return nil, newUsageError("URL is required")

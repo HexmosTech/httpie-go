@@ -36,7 +36,7 @@ func Lama2Entry(cmdArgs []string, stdinBody io.Reader) (ExResponse, error) {
 	options := Options{}
 	args, usage, optionSet, err := flags.Parse(cmdArgs)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to parse flags")
+		log.Info().Err(err).Msg("Failed to parse flags")
 		return ExResponse{}, err
 	}
 	inputOptions := optionSet.InputOptions
@@ -125,7 +125,7 @@ func getExitStatus(statusCode int) int {
 func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions *output.Options) (ExResponse, error) {
 	// Prepare printer
 	log.Info().Msg("Starting Exchange function")
-
+	
 	writer := bufio.NewWriter(os.Stdout)
 	defer writer.Flush()
 
