@@ -36,6 +36,7 @@ func Lama2Entry(cmdArgs []string, stdinBody io.Reader) (ExResponse, error) {
 	options := Options{}
 	args, usage, optionSet, err := flags.Parse(cmdArgs)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse flags")
 		return ExResponse{}, err
 	}
 	inputOptions := optionSet.InputOptions
@@ -51,22 +52,28 @@ func Lama2Entry(cmdArgs []string, stdinBody io.Reader) (ExResponse, error) {
 	in, err := input.ParseArgs(args, stdinBody, &inputOptions)
 	if _, ok := errors.Cause(err).(*input.UsageError); ok {
 		usage.PrintUsage(os.Stderr)
+		log.Warn().Err(err).Msg("Usage error while parsing positional arguments")
 		return ExResponse{}, err
 	}
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse positional arguments")
 		return ExResponse{}, err
 	}
 
 	// Send request and receive response
 	status, err := Exchange(in, &exchangeOptions, &outputOptions)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to parse positional arguments")
 		return ExResponse{}, err
 	}
 
 	if exchangeOptions.CheckStatus {
+		log.Error().Err(err).Msg("Error during Exchange")
+		log.Info().Int("exitStatus", status.StatusCode).Msg("Checking status code for exit status")
 		os.Exit(getExitStatus(status.StatusCode))
 	}
-
+	log.Info().Msg("Lama2Entry completed successfully")
+	log.Info().Int("Req body", status.StatusCode).Msg("")
 	return status, nil
 }
 
@@ -117,6 +124,8 @@ func getExitStatus(statusCode int) int {
 
 func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions *output.Options) (ExResponse, error) {
 	// Prepare printer
+	log.Info().Msg("Starting Exchange function")
+
 	writer := bufio.NewWriter(os.Stdout)
 	defer writer.Flush()
 
@@ -127,6 +136,7 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	// Build HTTP request
 	request, err := exchange.BuildHTTPRequest(in, exchangeOptions)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to build HTTP request")
 		return ExResponse{-1, "", map[string]string{}}, err
 	}
 
@@ -171,10 +181,12 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	// Send HTTP request and receive HTTP request
 	httpClient, err := exchange.BuildHTTPClient(exchangeOptions)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to build HTTP client")
 		return ExResponse{-1, "", map[string]string{}}, err
 	}
 	resp, err := httpClient.Do(request)
 	if err != nil {
+		log.Error().Err(err).Msg("Error sending HTTP request")
 		return ExResponse{-1, "", map[string]string{}}, errors.Wrap(err, "sending HTTP request")
 	}
 	defer resp.Body.Close()
@@ -193,16 +205,19 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 		file := output.NewFileWriter(in.URL, outputOptions)
 
 		if err := printer.PrintDownload(resp.ContentLength, file.Filename()); err != nil {
+			log.Error().Err(err).Msg("Error printing download details")
 			return ExResponse{-1, "", map[string]string{}}, err
 		}
 		writer.Flush()
 
 		if err = file.Download(resp); err != nil {
+			log.Error().Err(err).Msg("Error during file download")
 			return ExResponse{-1, "", map[string]string{}}, err
 		}
 	} else {
 		if outputOptions.PrintResponseBody {
 			if err := printer.PrintBody(resp.Body, resp.Header.Get("Content-Type")); err != nil {
+				log.Error().Err(err).Msg("Error printing response body")
 				return ExResponse{-1, "", map[string]string{}}, err
 			}
 		}
@@ -224,6 +239,7 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 			headerMap[name] = value
 		}
 	}
+	log.Info().Msg("Exchange function completed successfully")
 
 	return ExResponse{resp.StatusCode, respBody, headerMap}, nil
 }
