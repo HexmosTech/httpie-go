@@ -51,7 +51,7 @@ func parse(args []string, terminalInfo terminalInfo) ([]string, Usage, *OptionSe
 	var headersFlag bool
 	var bodyFlag bool
 	printFlag := "\000" // "\000" is a special value that indicates user did not specified --print
-	timeout := "30s"
+	timeout := "60s"
 	var prettyFlag string
 	var versionFlag bool
 	var licenseFlag bool
