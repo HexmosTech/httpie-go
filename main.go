@@ -14,6 +14,7 @@ import (
 	"github.com/HexmosTech/httpie-go/input"
 	"github.com/HexmosTech/httpie-go/output"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 )
 
 type Options struct {
@@ -30,6 +31,8 @@ type ExResponse struct {
 
 func Lama2Entry(cmdArgs []string, stdinBody io.Reader) (ExResponse, error) {
 	// Parse flags
+	// log.Info().Str("Req body", stdinBody).Msg("")
+	log.Info().Interface("commands from httie inside dependency", cmdArgs).Msg("cmdArgs")
 	options := Options{}
 	args, usage, optionSet, err := flags.Parse(cmdArgs)
 	if err != nil {
