@@ -63,7 +63,7 @@ func Lama2Entry(cmdArgs []string, stdinBody io.Reader) (ExResponse, error) {
 	}
 
 	// Send request and receive response
-	status, err := Exchange(in, &exchangeOptions, &outputOptions)
+	status, err := ExchangeJS(in, &exchangeOptions, &outputOptions)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to parse positional arguments")
 		return ExResponse{}, err
