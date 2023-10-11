@@ -11,6 +11,8 @@ import (
 	"net/textproto"
 	"net/url"
 	"os"
+	// "syscall/js"
+
 	"path"
 	"strings"
 
