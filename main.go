@@ -67,43 +67,43 @@ func Lama2Entry(cmdArgs []string, stdinBody io.Reader, proxyURL string, autoRedi
 	return status, nil
 }
 
-func Main(options *Options) error {
-	// Parse flags
-	args, usage, optionSet, err := flags.Parse(os.Args)
-	if err != nil {
-		return err
-	}
-	inputOptions := optionSet.InputOptions
-	exchangeOptions := optionSet.ExchangeOptions
-	exchangeOptions.Transport = options.Transport
-	outputOptions := optionSet.OutputOptions
+// func Main(options *Options) error {
+// 	// Parse flags
+// 	args, usage, optionSet, err := flags.Parse(os.Args)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	inputOptions := optionSet.InputOptions
+// 	exchangeOptions := optionSet.ExchangeOptions
+// 	exchangeOptions.Transport = options.Transport
+// 	outputOptions := optionSet.OutputOptions
 
-	// this shouldn't be hardcoded, but for testing
-	// we are keeping it in this way
-	// inputOptions.ReadStdin = false
+// 	// this shouldn't be hardcoded, but for testing
+// 	// we are keeping it in this way
+// 	// inputOptions.ReadStdin = false
 
-	// Parse positional arguments
-	in, err := input.ParseArgs(args, os.Stdin, &inputOptions)
-	if _, ok := errors.Cause(err).(*input.UsageError); ok {
-		usage.PrintUsage(os.Stderr)
-		return err
-	}
-	if err != nil {
-		return err
-	}
+// 	// Parse positional arguments
+// 	in, err := input.ParseArgs(args, os.Stdin, &inputOptions)
+// 	if _, ok := errors.Cause(err).(*input.UsageError); ok {
+// 		usage.PrintUsage(os.Stderr)
+// 		return err
+// 	}
+// 	if err != nil {
+// 		return err
+// 	}
 
-	// Send request and receive response
-	status, err := Exchange(in, &exchangeOptions, &outputOptions)
-	if err != nil {
-		return err
-	}
+// 	// Send request and receive response
+// 	status, err := Exchange(in, &exchangeOptions, &outputOptions, proxyURL,autoRedirect)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if exchangeOptions.CheckStatus {
-		os.Exit(getExitStatus(status.StatusCode))
-	}
+// 	if exchangeOptions.CheckStatus {
+// 		os.Exit(getExitStatus(status.StatusCode))
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func getExitStatus(statusCode int) int {
 	if 300 <= statusCode && statusCode < 600 {

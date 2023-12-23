@@ -3,17 +3,19 @@ package exchange
 import (
 	"crypto/tls"
 	"net/http"
+	"net/url"
 )
 
-func BuildHTTPClient(options *Options,proxyURL string, autoRedirect bool) (*http.Client, error) {
+func BuildHTTPClient(options *Options, proxyURL string, autoRedirect bool) (*http.Client, error) {
+	var checkRedirect func(req *http.Request, via []*http.Request) error
 
 	if autoRedirect {
-        checkRedirect = nil // Follow redirects
-    } else {
-	checkRedirect := func(req *http.Request, via []*http.Request) error {
-		// Do not follow redirects
-		return http.ErrUseLastResponse
-	}
+		checkRedirect = nil // Follow redirects
+	} else {
+		checkRedirect = func(req *http.Request, via []*http.Request) error {
+			// Do not follow redirects
+			return http.ErrUseLastResponse
+		}
 	}
 	// if options.FollowRedirects {
 	// 	checkRedirect = nil
