@@ -5,14 +5,19 @@ import (
 	"net/http"
 )
 
-func BuildHTTPClient(options *Options) (*http.Client, error) {
+func BuildHTTPClient(options *Options,proxyURL string, autoRedirect bool) (*http.Client, error) {
+
+	if autoRedirect {
+        checkRedirect = nil // Follow redirects
+    } else {
 	checkRedirect := func(req *http.Request, via []*http.Request) error {
 		// Do not follow redirects
 		return http.ErrUseLastResponse
 	}
-	if options.FollowRedirects {
-		checkRedirect = nil
 	}
+	// if options.FollowRedirects {
+	// 	checkRedirect = nil
+	// }
 
 	client := http.Client{
 		CheckRedirect: checkRedirect,
@@ -26,6 +31,14 @@ func BuildHTTPClient(options *Options) (*http.Client, error) {
 		transp = options.Transport
 	}
 	if httpTransport, ok := transp.(*http.Transport); ok {
+		if proxyURL != "" {
+			proxyURLParsed, err := url.Parse(proxyURL)
+			if err != nil {
+				return nil, err
+			}
+			httpTransport.Proxy = http.ProxyURL(proxyURLParsed)
+		}
+
 		httpTransport.TLSClientConfig.InsecureSkipVerify = options.SkipVerify
 		if options.ForceHTTP1 {
 			httpTransport.TLSClientConfig.NextProtos = []string{"http/1.1", "http/1.0"}
