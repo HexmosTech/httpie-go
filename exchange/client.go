@@ -6,7 +6,7 @@ import (
 	"net/url"
 )
 
-func BuildHTTPClient(options *Options, proxyURL string, autoRedirect bool) (*http.Client, error) {
+func BuildHTTPClient(options *Options, proxyURL string,proxyUsername string, proxyPassword string, autoRedirect bool) (*http.Client, error) {
 	var checkRedirect func(req *http.Request, via []*http.Request) error
 
 	if autoRedirect {
@@ -38,7 +38,18 @@ func BuildHTTPClient(options *Options, proxyURL string, autoRedirect bool) (*htt
 			if err != nil {
 				return nil, err
 			}
+
+			proxyURLParsed.User = url.UserPassword(proxyUsername, proxyPassword)
 			httpTransport.Proxy = http.ProxyURL(proxyURLParsed)
+			
+			// initial
+			// httpTransport.Proxy = http.ProxyURL(proxyURLParsed)
+			// New
+			// httpTransport.ProxyConnect = func(network, addr string) (netConn net.Conn, err error) {
+			// 	proxyURLParsed.User = url.UserPassword(proxyUsername, proxyPassword)
+			// 	return httpTransport.ProxyConnect(network, proxyURLParsed.Host)
+			// }
+
 		}
 
 		httpTransport.TLSClientConfig.InsecureSkipVerify = options.SkipVerify
