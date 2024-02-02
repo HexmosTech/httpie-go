@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"net/http"
 	"net/url"
+	"fmt"
 )
 
 func BuildHTTPClient(options *Options, proxyURL string,proxyUsername string, proxyPassword string, autoRedirect bool) (*http.Client, error) {
