@@ -36,6 +36,7 @@ func BuildHTTPClient(options *Options, proxyURL string,proxyUsername string, pro
 		if proxyURL != "" {
 			proxyURLParsed, err := url.Parse(proxyURL)
 			if err != nil {
+				fmt.Println(err)
 				return nil, err
 			}
 

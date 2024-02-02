@@ -28,11 +28,13 @@ type ExResponse struct {
 	Headers    map[string]string
 }
 
-func Lama2Entry(cmdArgs []string, stdinBody io.Reader, proxyURL string,proxyUsername string, proxyPassword string, autoRedirect bool) (ExResponse, error) {
+func Lama2Entry(cmdArgs []string, stdinBody io.Reader, proxyURL string, proxyUsername string, proxyPassword string, autoRedirect bool) (ExResponse, error) {
 	// Parse flags
+	fmt.Println("inisde Lama2 Entry File")
 	options := Options{}
 	args, usage, optionSet, err := flags.Parse(cmdArgs)
 	if err != nil {
+		fmt.Println(err)
 		return ExResponse{}, err
 	}
 	inputOptions := optionSet.InputOptions
@@ -51,12 +53,14 @@ func Lama2Entry(cmdArgs []string, stdinBody io.Reader, proxyURL string,proxyUser
 		return ExResponse{}, err
 	}
 	if err != nil {
+		fmt.Println(err)
 		return ExResponse{}, err
 	}
 
 	// Send request and receive response
-	status, err := Exchange(in, &exchangeOptions, &outputOptions, proxyURL,proxyUsername, proxyPassword ,autoRedirect)
+	status, err := Exchange(in, &exchangeOptions, &outputOptions, proxyURL, proxyUsername, proxyPassword, autoRedirect)
 	if err != nil {
+		fmt.Println(err)
 		return ExResponse{}, err
 	}
 
@@ -112,8 +116,9 @@ func getExitStatus(statusCode int) int {
 	return 0
 }
 
-func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions *output.Options,proxyURL string,proxyUsername string, proxyPassword string, autoRedirect bool) (ExResponse, error) {
+func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions *output.Options, proxyURL string, proxyUsername string, proxyPassword string, autoRedirect bool) (ExResponse, error) {
 	// Prepare printer
+	fmt.Println("inside exchange Function")
 	writer := bufio.NewWriter(os.Stdout)
 	defer writer.Flush()
 
@@ -124,6 +129,7 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	// Build HTTP request
 	request, err := exchange.BuildHTTPRequest(in, exchangeOptions)
 	if err != nil {
+		fmt.Println(err)
 		return ExResponse{-1, "", map[string]string{}}, err
 	}
 
@@ -133,10 +139,12 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 		// We can get these headers by DumpRequestOut and ReadRequest.
 		dump, err := httputil.DumpRequestOut(request, true)
 		if err != nil {
+			fmt.Println(err)
 			return ExResponse{-1, "", map[string]string{}}, err // should not happen
 		}
 		r, err := http.ReadRequest(bufio.NewReader(bytes.NewReader(dump)))
 		if err != nil {
+			fmt.Println(err)
 			return ExResponse{-1, "", map[string]string{}}, err // should not happen
 		}
 		defer r.Body.Close()
@@ -150,14 +158,17 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 
 		if outputOptions.PrintRequestHeader {
 			if err := printer.PrintRequestLine(r); err != nil {
+				fmt.Println(err)
 				return ExResponse{-1, "", map[string]string{}}, err
 			}
 			if err := printer.PrintHeader(r.Header); err != nil {
+				fmt.Println(err)
 				return ExResponse{-1, "", map[string]string{}}, err
 			}
 		}
 		if outputOptions.PrintRequestBody {
 			if err := printer.PrintBody(r.Body, r.Header.Get("Content-Type")); err != nil {
+				fmt.Println(err)
 				return ExResponse{-1, "", map[string]string{}}, err
 			}
 		}
@@ -166,8 +177,9 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	}
 
 	// Send HTTP request and receive HTTP request
-	httpClient, err := exchange.BuildHTTPClient(exchangeOptions,proxyURL,proxyUsername, proxyPassword, autoRedirect)
+	httpClient, err := exchange.BuildHTTPClient(exchangeOptions, proxyURL, proxyUsername, proxyPassword, autoRedirect)
 	if err != nil {
+		fmt.Println(err)
 		return ExResponse{-1, "", map[string]string{}}, err
 	}
 	resp, err := httpClient.Do(request)
