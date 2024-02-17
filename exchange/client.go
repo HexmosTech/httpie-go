@@ -19,10 +19,7 @@ func BuildHTTPClient(options *Options, proxyURL string,proxyUsername string, pro
 			return http.ErrUseLastResponse
 		}
 	}
-	// if options.FollowRedirects {
-	// 	checkRedirect = nil
-	// }
-
+	
 	client := http.Client{
 		CheckRedirect: checkRedirect,
 		Timeout:       options.Timeout,
@@ -39,20 +36,13 @@ func BuildHTTPClient(options *Options, proxyURL string,proxyUsername string, pro
 			fmt.Println("Inside HTTPclient setup , proxy assignment")
 			proxyURLParsed, err := url.Parse(proxyURL)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println("Error parsing proxy URL:", err)
 				return nil, err
 			}
 
 			proxyURLParsed.User = url.UserPassword(proxyUsername, proxyPassword)
 			httpTransport.Proxy = http.ProxyURL(proxyURLParsed)
 			
-			// initial
-			// httpTransport.Proxy = http.ProxyURL(proxyURLParsed)
-			// New
-			// httpTransport.ProxyConnect = func(network, addr string) (netConn net.Conn, err error) {
-			// 	proxyURLParsed.User = url.UserPassword(proxyUsername, proxyPassword)
-			// 	return httpTransport.ProxyConnect(network, proxyURLParsed.Host)
-			// }
 
 		}
 
@@ -69,6 +59,6 @@ func BuildHTTPClient(options *Options, proxyURL string,proxyUsername string, pro
 
 
 	client.Transport = transp
-
+	fmt.Println("Configured http.Client:", client)
 	return &client, nil
 }
