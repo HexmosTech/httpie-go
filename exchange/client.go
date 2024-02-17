@@ -31,6 +31,7 @@ func BuildHTTPClient(options *Options, proxyURL string,proxyUsername string, pro
 	} else {
 		transp = options.Transport
 	}
+
 	if httpTransport, ok := transp.(*http.Transport); ok {
 		if proxyURL != "" {
 			fmt.Println("Inside HTTPclient setup , proxy assignment")
@@ -43,6 +44,18 @@ func BuildHTTPClient(options *Options, proxyURL string,proxyUsername string, pro
 			proxyURLParsed.User = url.UserPassword(proxyUsername, proxyPassword)
 			httpTransport.Proxy = http.ProxyURL(proxyURLParsed)
 			
+			httpTransport.TLSClientConfig.InsecureSkipVerify = options.SkipVerify
+			if options.ForceHTTP1 {
+				httpTransport.TLSClientConfig.NextProtos = []string{"http/1.1", "http/1.0"}
+				httpTransport.TLSNextProto = make(map[string]func(string, *tls.Conn) http.RoundTripper)
+			}
+
+			httpTransport.TLSClientConfig.InsecureSkipVerify = true
+			httpTransport.DisableKeepAlives = true
+
+			client.Transport = httpTransport
+			fmt.Println("Configured http.Client:", client)
+			return &client, nil
 
 		}
 
