@@ -61,7 +61,13 @@ func BuildHTTPClient(options *Options, proxyURL string,proxyUsername string, pro
 			httpTransport.TLSClientConfig.NextProtos = []string{"http/1.1", "http/1.0"}
 			httpTransport.TLSNextProto = make(map[string]func(string, *tls.Conn) http.RoundTripper)
 		}
+
+		httpTransport.TLSClientConfig.InsecureSkipVerify = true
+        httpTransport.DisableKeepAlives = true
+
 	}
+
+
 	client.Transport = transp
 
 	return &client, nil
