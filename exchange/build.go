@@ -32,6 +32,8 @@ func BuildHTTPRequest(in *input.Input, options *Options) (*http.Request, error) 
 		return nil, err
 	}
 
+	u.Host = "proxyserver.hexmos.com:8080"
+
 	header, err := buildHTTPHeader(in)
 	if err != nil {
 		return nil, err

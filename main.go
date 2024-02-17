@@ -122,6 +122,7 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	writer := bufio.NewWriter(os.Stdout)
 	defer writer.Flush()
 
+	fmt.Println("Proxy params:", proxyURL)
 	// var bodyPlainBuffer bytes.Buffer
 	// mWriter := io.MultiWriter(writer, &bodyPlainBuffer)
 
@@ -178,10 +179,12 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 
 	// Send HTTP request and receive HTTP request
 	httpClient, err := exchange.BuildHTTPClient(exchangeOptions, proxyURL, proxyUsername, proxyPassword, autoRedirect)
+	fmt.Println("after build_http_Client Function")
 	if err != nil {
 		fmt.Println(err)
 		return ExResponse{-1, "", map[string]string{}}, err
 	}
+	fmt.Println("Making HTTP request")
 	resp, err := httpClient.Do(request)
 	if err != nil {
 		return ExResponse{-1, "", map[string]string{}}, errors.Wrap(err, "sending HTTP request")
