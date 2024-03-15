@@ -3,6 +3,7 @@ package httpie
 import (
 	"bufio"
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -133,7 +134,14 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 		fmt.Println(err)
 		return ExResponse{-1, "", map[string]string{}}, err
 	}
+	username := "proxyServer"
+	password := "proxy22523146server"
+	// auth := "proxyServer:proxy22523146server"
 
+	auth := fmt.Sprintf("%s:%s", username, password)
+	basic := "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
+	request.Header.Add("Proxy-Authorization", basic)
+	request.RequestURI = ""
 	// Print HTTP request
 	if outputOptions.PrintRequestHeader || outputOptions.PrintRequestBody {
 		// `request` does not contain HTTP headers that HttpClient.Do adds.
@@ -178,7 +186,7 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	}
 
 	// Send HTTP request and receive HTTP request
-	httpClient, err := exchange.BuildHTTPClient(exchangeOptions, proxyURL, proxyUsername, proxyPassword, autoRedirect)
+	httpClient, err := exchange.BuildHTTPClient(exchangeOptions, proxyURL, proxyUsername, proxyPassword, autoRedirect,request)
 	fmt.Println("after build_http_Client Function")
 	if err != nil {
 		fmt.Println(err)
