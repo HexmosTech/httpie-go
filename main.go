@@ -5,15 +5,23 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	// "syscall/js"
+
+	// "io"
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"strconv"
 
+	// "errors"
+	// "fmt"
 	"github.com/HexmosTech/httpie-go/exchange"
 	"github.com/HexmosTech/httpie-go/flags"
 	"github.com/HexmosTech/httpie-go/input"
 	"github.com/HexmosTech/httpie-go/output"
 	"github.com/pkg/errors"
+	// "github.com/pkg/errors"
+	// "syscall/js"
 )
 
 type Options struct {
@@ -28,9 +36,22 @@ type ExResponse struct {
 	Headers    map[string]string
 }
 
+func getStringSlice(jsArray js.Value) []string {
+	length := jsArray.Length()
+	slice := make([]string, length)
+	for i := 0; i < length; i++ {
+		slice[i] = jsArray.Index(i).String()
+	}
+	return slice
+}
+
+func Int(i int) int {
+	i, _ = strconv.Atoi(strconv.Itoa(i))
+	return i
+}
+
 func Lama2Entry(cmdArgs []string, stdinBody io.Reader, proxyURL string, proxyUsername string, proxyPassword string, autoRedirect bool) (ExResponse, error) {
-	// Parse flags
-	fmt.Println("inisde Lama2 Entry File")
+	fmt.Println("inisde Lama2 Entry File iteration number:0001")
 	options := Options{}
 	args, usage, optionSet, err := flags.Parse(cmdArgs)
 	if err != nil {
@@ -186,17 +207,24 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	}
 	fmt.Println("Making HTTP request")
 	resp, err := httpClient.Do(request)
+	resp.Header.Set("Access-Control-Allow-Origin", "*")
+	resp.Header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	resp.Header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	
 	if err != nil {
-		return ExResponse{-1, "", map[string]string{}}, errors.Wrap(err, "sending HTTP request")
+		fmt.Println(err)
 	}
 	defer resp.Body.Close()
 
+	
 	if outputOptions.PrintResponseHeader {
 		if err := printer.PrintStatusLine(resp.Proto, resp.Status, resp.StatusCode); err != nil {
-			return ExResponse{-1, "", map[string]string{}}, err
+			fmt.Println(err)
+			// return ExResponse{-1, "", map[string]string{}}, err
 		}
 		if err := printer.PrintHeader(resp.Header); err != nil {
-			return ExResponse{-1, "", map[string]string{}}, err
+			// return ExResponse{-1, "", map[string]string{}}, err
+			fmt.Println(err)
 		}
 		writer.Flush()
 	}
@@ -205,17 +233,20 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 		file := output.NewFileWriter(in.URL, outputOptions)
 
 		if err := printer.PrintDownload(resp.ContentLength, file.Filename()); err != nil {
-			return ExResponse{-1, "", map[string]string{}}, err
+			// return ExResponse{-1, "", map[string]string{}}, err
+			fmt.Println(err)
 		}
 		writer.Flush()
 
 		if err = file.Download(resp); err != nil {
-			return ExResponse{-1, "", map[string]string{}}, err
+			// return ExResponse{-1, "", map[string]string{}}, err
+			fmt.Println(err)
 		}
 	} else {
 		if outputOptions.PrintResponseBody {
 			if err := printer.PrintBody(resp.Body, resp.Header.Get("Content-Type")); err != nil {
-				return ExResponse{-1, "", map[string]string{}}, err
+				// return ExResponse{-1, "", map[string]string{}}, err
+				fmt.Println(err)
 			}
 		}
 	}

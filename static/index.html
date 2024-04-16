@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTTPie-Go WebAssembly Demo</title>
+</head>
+<body>
+<script src="wasm_exec.js"></script>
+<h1>HTTPie-Go WebAssembly Demo</h1>
+
+<button onclick="performHTTPRequest()">Perform HTTP Request</button>
+
+<script>
+  async function performHTTPRequest() {
+    // Dummy data for demonstration
+    const cmdArgs = ['GET', 'http://proxyserver.hexmos.com:8080/https://google.com'];
+    const stdinBody = new TextEncoder().encode('Hello, WebAssembly!');
+    const proxyURL = 'http://proxyserver.hexmos.com:8080/';
+    const proxyUsername = 'proxyServer';
+    const proxyPassword = 'proxy22523146server';
+    const autoRedirect = true;
+
+    // Call the Go function
+    const result = await Lama2EntryPromise(
+      cmdArgs,
+      stdinBody,
+      proxyURL,
+      proxyUsername,
+      proxyPassword,
+      autoRedirect
+    );
+    console.log(result)
+    // const jsonObject = JSON.parse(result);
+    // const formattedBody = JSON.parse(jsonObject.Body); 
+    // var formattedJson = JSON.stringify(formattedBody, null, 2);
+    // console.log("Response Data from JS:", formattedJson); 
+    // // Handle the result (modify this part based on your needs)
+    // console.log('Result:', result);
+    // alert('HTTP Request performed successfully!');
+  }
+
+  // Load the WebAssembly module
+  const go = new Go();
+  WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject).then((result) => {
+    go.run(result.instance);
+  });
+
+  // Define the Go function wrapper
+  function Lama2EntryPromise(cmdArgs, stdinBody, proxyURL, proxyUsername, proxyPassword, autoRedirect) {
+    return new Promise((resolve) => {
+      // Call the Go function asynchronously
+      // window.Lama2EntryPromise = (result) => resolve(result);
+      window.Lama2EntryPromise(cmdArgs, stdinBody, proxyURL, proxyUsername, proxyPassword, autoRedirect);
+    });
+  }
+</script>
+
+</body>
+
+</html>
