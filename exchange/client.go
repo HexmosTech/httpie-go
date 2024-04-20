@@ -1,10 +1,8 @@
 package exchange
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
-	"net/url"
 )
 
 func BuildHTTPClient(options *Options, proxyURL string, proxyUsername string, proxyPassword string, autoRedirect bool, request *http.Request) (*http.Client, error) {
@@ -20,22 +18,22 @@ func BuildHTTPClient(options *Options, proxyURL string, proxyUsername string, pr
 		}
 	}
 
-	proxyURL1 := url.URL{
-		Scheme: "http",
-		Host:   "proxyserver.hexmos.com:8080",
-	}
-	
-	transport := &http.Transport{
-		Proxy:           http.ProxyURL(&proxyURL1),
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	transport.ProxyConnectHeader = request.Header
-	client :=  &http.Client{
-		Transport: transport,
+	// proxyURL1 := url.URL{
+	// 	Scheme: "https",
+	// 	Host:   "proxyserver.hexmos.com",
+	// }
+
+	// transport := &http.Transport{
+	// 	Proxy:           http.ProxyURL(&proxyURL1),
+	// 	TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	// }
+	// transport.ProxyConnectHeader = request.Header
+	client := &http.Client{
+		// Transport: transport,
 		CheckRedirect: checkRedirect,
 		// Timeout:       options.Timeout,
 	}
-	 
+
 	// if proxyURL != "" {
 	// 	fmt.Println("Inside HTTP client setup, proxy assignment")
 
@@ -57,11 +55,11 @@ func BuildHTTPClient(options *Options, proxyURL string, proxyUsername string, pr
 	// 	}
 
 	// 	client.Transport = proxyTransport
- 	// 	fmt.Println("Configured http.Client with proxy:", client)
+	// 	fmt.Println("Configured http.Client with proxy:", client)
 	// 	return &client, nil
 
 	// }
 
-	fmt.Println("Configured http.Client with proxy:", client)
+	// fmt.Println("Configured http.Client with proxy:", client)
 	return client, nil
 }

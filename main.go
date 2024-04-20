@@ -6,6 +6,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"syscall/js"
+
 	// "syscall/js"
 
 	// "io"
@@ -161,7 +163,7 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 
 	auth := fmt.Sprintf("%s:%s", username, password)
 	basic := "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
-	request.Header.Add("Proxy-Authorization", basic)
+	request.Header.Add("Authorization", basic)
 	request.RequestURI = ""
 	// Print HTTP request
 	if outputOptions.PrintRequestHeader || outputOptions.PrintRequestBody {
@@ -207,24 +209,23 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	}
 
 	// Send HTTP request and receive HTTP request
-	httpClient, err := exchange.BuildHTTPClient(exchangeOptions, proxyURL, proxyUsername, proxyPassword, autoRedirect,request)
+	httpClient, err := exchange.BuildHTTPClient(exchangeOptions, proxyURL, proxyUsername, proxyPassword, autoRedirect, request)
 	fmt.Println("after build_http_Client Function")
 	if err != nil {
 		fmt.Println(err)
 		return ExResponse{-1, "", map[string]string{}}, err
 	}
-	fmt.Println("Making HTTP request")
+	fmt.Println("Making HTTP request", request)
 	resp, err := httpClient.Do(request)
-	resp.Header.Set("Access-Control-Allow-Origin", "*")
-	resp.Header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-	resp.Header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-	
+	// resp.Header.Set("Access-Control-Allow-Origin", "*")
+	// resp.Header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	// resp.Header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, User-Agent")
+
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer resp.Body.Close()
 
-	
 	if outputOptions.PrintResponseHeader {
 		if err := printer.PrintStatusLine(resp.Proto, resp.Status, resp.StatusCode); err != nil {
 			fmt.Println(err)
