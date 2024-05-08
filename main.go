@@ -163,7 +163,13 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 
 	auth := fmt.Sprintf("%s:%s", username, password)
 	basic := "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
-	request.Header.Add("Authorization", basic)
+
+	request.Header.Add("proxyauth", basic)
+	cookieValue := request.Header.Get("Cookie")
+	if cookieValue != "" {
+		request.Header.Add("CustomCookie", cookieValue)
+	}
+
 	request.RequestURI = ""
 	// Print HTTP request
 	if outputOptions.PrintRequestHeader || outputOptions.PrintRequestBody {
