@@ -1,65 +1,40 @@
+//go:build cli
+
 package exchange
 
 import (
-	"fmt"
+	"crypto/tls"
 	"net/http"
 )
 
-func BuildHTTPClient(options *Options, proxyURL string, proxyUsername string, proxyPassword string, autoRedirect bool, request *http.Request) (*http.Client, error) {
-	fmt.Println("inside BuildHTTPClient Function")
-	var checkRedirect func(req *http.Request, via []*http.Request) error
+func BuildHTTPClient(options *Options) (*http.Client, error) {
+	checkRedirect := func(req *http.Request, via []*http.Request) error {
+		// Do not follow redirects
+		return http.ErrUseLastResponse
+	}
+	if options.FollowRedirects {
+		checkRedirect = nil
+	}
 
-	if autoRedirect {
-		checkRedirect = nil // Follow redirects
+	client := http.Client{
+		CheckRedirect: checkRedirect,
+		Timeout:       options.Timeout,
+	}
+
+	var transp http.RoundTripper
+	if options.Transport == nil {
+		transp = http.DefaultTransport.(*http.Transport).Clone()
 	} else {
-		checkRedirect = func(req *http.Request, via []*http.Request) error {
-			// Do not follow redirects
-			return http.ErrUseLastResponse
+		transp = options.Transport
+	}
+	if httpTransport, ok := transp.(*http.Transport); ok {
+		httpTransport.TLSClientConfig.InsecureSkipVerify = options.SkipVerify
+		if options.ForceHTTP1 {
+			httpTransport.TLSClientConfig.NextProtos = []string{"http/1.1", "http/1.0"}
+			httpTransport.TLSNextProto = make(map[string]func(string, *tls.Conn) http.RoundTripper)
 		}
 	}
+	client.Transport = transp
 
-	// proxyURL1 := url.URL{
-	// 	Scheme: "https",
-	// 	Host:   "proxyserver.hexmos.com",
-	// }
-
-	// transport := &http.Transport{
-	// 	Proxy:           http.ProxyURL(&proxyURL1),
-	// 	TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	// }
-	// transport.ProxyConnectHeader = request.Header
-	client := &http.Client{
-		// Transport: transport,
-		CheckRedirect: checkRedirect,
-		// Timeout:       options.Timeout,
-	}
-
-	// if proxyURL != "" {
-	// 	fmt.Println("Inside HTTP client setup, proxy assignment")
-
-	// 	proxyURLParsed, err := url.Parse(proxyURL)
-	// 	if err != nil {
-	// 		fmt.Println("Error parsing proxy URL:", err)
-	// 		return nil, err
-	// 	}
-	// 	proxyURLParsed.User = url.UserPassword(proxyUsername, proxyPassword)
-	// 	proxyTransport := &http.Transport{
-	// 		Proxy:           http.ProxyURL(proxyURLParsed),
-	// 		TLSClientConfig: &tls.Config{InsecureSkipVerify: options.SkipVerify},
-	// 		DisableKeepAlives: true,
-	// 	}
-
-	// 	if options.ForceHTTP1 {
-	// 		proxyTransport.TLSNextProto = make(map[string]func(string, *tls.Conn) http.RoundTripper)
-	// 		proxyTransport.TLSClientConfig.NextProtos = []string{"http/1.1", "http/1.0"}
-	// 	}
-
-	// 	client.Transport = proxyTransport
-	// 	fmt.Println("Configured http.Client with proxy:", client)
-	// 	return &client, nil
-
-	// }
-
-	// fmt.Println("Configured http.Client with proxy:", client)
-	return client, nil
+	return &client, nil
 }
