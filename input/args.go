@@ -131,12 +131,9 @@ func parseMethod(s string) (Method, error) {
 }
 
 func guessMethod(in *Input) Method {
-	fmt.Println("Inside guess Method")
 	if in.Body.BodyType == EmptyBody {
-		fmt.Println("Selected GET")
 		return Method("GET")
 	} else {
-		fmt.Println("Selected POST")
 		return Method("POST")
 	}
 }

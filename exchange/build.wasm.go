@@ -32,23 +32,13 @@ func BuildHTTPRequest(in *input.Input, options *Options) (*http.Request, error) 
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("Value of url: %v\n", u)
-	fmt.Printf("Type of url: %T\n", u)
-
+	
 	uString := fmt.Sprintf("%s%s", "https://proxyserver.hexmos.com/", u.String())
-
-	// Log the modified URL and its type
-	fmt.Printf("Modified URL: %s\n", uString)
-	fmt.Printf("Type of u: %T\n", u)
 
 	modifiedURL, err := url.Parse(uString)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("Modified URL: %s\n", modifiedURL.String())
-	fmt.Printf("Type of u: %T\n", modifiedURL)
 
 	header, err := buildHTTPHeader(in)
 	if err != nil {

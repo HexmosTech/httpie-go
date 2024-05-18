@@ -50,7 +50,6 @@ func Int(i int) int {
 }
 
 func Lama2Entry(cmdArgs []string, stdinBody io.Reader, proxyURL string, proxyUsername string, proxyPassword string, autoRedirect bool) (ExResponse, error) {
-	fmt.Println("inisde Lama2 Entry File iteration number:0001")
 	options := Options{}
 	args, usage, optionSet, err := flags.Parse(cmdArgs)
 	if err != nil {
@@ -175,7 +174,6 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 
 	// Send HTTP request and receive HTTP request
 	httpClient, err := exchange.BuildHTTPClient(exchangeOptions, proxyURL, proxyUsername, proxyPassword, autoRedirect, request)
-	fmt.Println("after build_http_Client Function")
 	if err != nil {
 		fmt.Println(err)
 		return ExResponse{-1, "", map[string]string{}}, err

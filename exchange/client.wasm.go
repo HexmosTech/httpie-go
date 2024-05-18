@@ -8,7 +8,6 @@ import (
 )
 
 func BuildHTTPClient(options *Options, proxyURL string, proxyUsername string, proxyPassword string, autoRedirect bool, request *http.Request) (*http.Client, error) {
-	fmt.Println("inside BuildHTTPClient Function")
 	var checkRedirect func(req *http.Request, via []*http.Request) error
 
 	if autoRedirect {
