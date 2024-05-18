@@ -20,48 +20,9 @@ func BuildHTTPClient(options *Options, proxyURL string, proxyUsername string, pr
 		}
 	}
 
-	// proxyURL1 := url.URL{
-	// 	Scheme: "https",
-	// 	Host:   "proxyserver.hexmos.com",
-	// }
-
-	// transport := &http.Transport{
-	// 	Proxy:           http.ProxyURL(&proxyURL1),
-	// 	TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	// }
-	// transport.ProxyConnectHeader = request.Header
 	client := &http.Client{
-		// Transport: transport,
 		CheckRedirect: checkRedirect,
-		// Timeout:       options.Timeout,
 	}
 
-	// if proxyURL != "" {
-	// 	fmt.Println("Inside HTTP client setup, proxy assignment")
-
-	// 	proxyURLParsed, err := url.Parse(proxyURL)
-	// 	if err != nil {
-	// 		fmt.Println("Error parsing proxy URL:", err)
-	// 		return nil, err
-	// 	}
-	// 	proxyURLParsed.User = url.UserPassword(proxyUsername, proxyPassword)
-	// 	proxyTransport := &http.Transport{
-	// 		Proxy:           http.ProxyURL(proxyURLParsed),
-	// 		TLSClientConfig: &tls.Config{InsecureSkipVerify: options.SkipVerify},
-	// 		DisableKeepAlives: true,
-	// 	}
-
-	// 	if options.ForceHTTP1 {
-	// 		proxyTransport.TLSNextProto = make(map[string]func(string, *tls.Conn) http.RoundTripper)
-	// 		proxyTransport.TLSClientConfig.NextProtos = []string{"http/1.1", "http/1.0"}
-	// 	}
-
-	// 	client.Transport = proxyTransport
-	// 	fmt.Println("Configured http.Client with proxy:", client)
-	// 	return &client, nil
-
-	// }
-
-	// fmt.Println("Configured http.Client with proxy:", client)
 	return client, nil
 }

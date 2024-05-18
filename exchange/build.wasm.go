@@ -64,9 +64,6 @@ func BuildHTTPRequest(in *input.Input, options *Options) (*http.Request, error) 
 		header.Set("Content-Type", bodyTuple.contentType)
 	}
 	if header.Get("User-Agent") == "" {
-		// header.Set("User-Agent", fmt.Sprintf("httpie-go/%s", version.Current()))
-		// header.Set("User-Agent", fmt.Sprintf(""))
-		// header.Del("User-Agent")
 		header.Set("User-Agent", `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36`)
 	}
 

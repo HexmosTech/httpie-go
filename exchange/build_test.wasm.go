@@ -26,69 +26,6 @@ func parseURL(t *testing.T, rawurl string) *url.URL {
 	return u
 }
 
-// func TestBuildHTTPRequest(t *testing.T) {
-// 	// Setup
-// 	in := &input.Input{
-// 		Method: input.Method("POST"),
-// 		URL:    parseURL(t, "https://localhost:4000/foo"),
-// 		Parameters: []input.Field{
-// 			{Name: "q", Value: "hello world"},
-// 		},
-// 		Header: input.Header{
-// 			Fields: []input.Field{
-// 				{Name: "X-Foo", Value: "fizz buzz"},
-// 				{Name: "Host", Value: "example.com:8080"},
-// 			},
-// 		},
-// 		Body: input.Body{
-// 			BodyType: input.JSONBody,
-// 			Fields: []input.Field{
-// 				{Name: "hoge", Value: "fuga"},
-// 			},
-// 		},
-// 	}
-// 	options := Options{
-// 		Auth: AuthOptions{
-// 			Enabled:  true,
-// 			UserName: "alice",
-// 			Password: "open sesame",
-// 		},
-// 	}
-
-// 	// Exercise
-// 	actual, err := BuildHTTPRequest(in, &options)
-// 	if err != nil {
-// 		t.Fatalf("unexpected error: err=%v", err)
-// 	}
-
-// 	// Verify
-// 	if actual.Method != "POST" {
-// 		t.Errorf("unexpected method: expected=%v, actual=%v", "POST", actual.Method)
-// 	}
-// 	expectedURL := parseURL(t, "https://localhost:4000/foo?q=hello+world")
-// 	if !reflect.DeepEqual(actual.URL, expectedURL) {
-// 		t.Errorf("unexpected URL: expected=%v, actual=%v", expectedURL, actual.URL)
-// 	}
-// 	expectedHeader := http.Header{
-// 		"X-Foo":         []string{"fizz buzz"},
-// 		"Content-Type":  []string{"application/json"},
-// 		"User-Agent":    []string{fmt.Sprintf("httpie-go/%s", version.Current())},
-// 		"Host":          []string{"example.com:8080"},
-// 		"Authorization": []string{"Basic YWxpY2U6b3BlbiBzZXNhbWU="},
-// 	}
-// 	if !reflect.DeepEqual(expectedHeader, actual.Header) {
-// 		t.Errorf("unexpected header: expected=%v, actual=%v", expectedHeader, actual.Header)
-// 	}
-// 	expectedHost := "example.com:8080"
-// 	if actual.Host != expectedHost {
-// 		t.Errorf("unexpected host: expected=%v, actual=%v", expectedHost, actual.Host)
-// 	}
-// 	expectedBody := `{"hoge": "fuga"}`
-// 	actualBody := readAll(t, actual.Body)
-// 	if !isEquivalentJSON(t, expectedBody, actualBody) {
-// 		t.Errorf("unexpected body: expected=%v, actual=%v", expectedBody, actualBody)
-// 	}
-// }
 
 func TestBuildURL(t *testing.T) {
 	testCases := []struct {
@@ -371,32 +308,3 @@ func TestBuildHTTPBody_FormBody_Multipart(t *testing.T) {
 		t.Errorf("invalid content length: len(body)=%v, actual=%v", len(actualBody), bodyTuple.contentLength)
 	}
 }
-
-// func TestBuildHTTPBody_RawBody(t *testing.T) {
-// 	// Setup
-// 	body := input.Body{
-// 		BodyType: input.RawBody,
-// 		Raw:      []byte("Hello, World!!"),
-// 	}
-// 	in := &input.Input{Body: body}
-
-// 	// Exercise
-// 	bodyTuple, err := buildHTTPBody(in)
-// 	if err != nil {
-// 		t.Fatalf("unexpected error: err=%+v", err)
-// 	}
-
-// 	// Verify
-// 	expectedBody := "Hello, World!!"
-// 	actualBody := readAll(t, bodyTuple.body)
-// 	if actualBody != expectedBody {
-// 		t.Errorf("unexpected body: expected=%s, actual=%s", expectedBody, actualBody)
-// 	}
-// 	expectedContentType := "application/json"
-// 	if bodyTuple.contentType != expectedContentType {
-// 		t.Errorf("unexpected content type: expected=%s, actual=%s", expectedContentType, bodyTuple.contentType)
-// 	}
-// 	if bodyTuple.contentLength != int64(len(actualBody)) {
-// 		t.Errorf("invalid content length: len(body)=%v, actual=%v", len(actualBody), bodyTuple.contentLength)
-// 	}
-// }

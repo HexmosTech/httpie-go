@@ -91,43 +91,6 @@ func Lama2Entry(cmdArgs []string, stdinBody io.Reader, proxyURL string, proxyUse
 	return status, nil
 }
 
-// func Main(options *Options) error {
-// 	// Parse flags
-// 	args, usage, optionSet, err := flags.Parse(os.Args)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	inputOptions := optionSet.InputOptions
-// 	exchangeOptions := optionSet.ExchangeOptions
-// 	exchangeOptions.Transport = options.Transport
-// 	outputOptions := optionSet.OutputOptions
-
-// 	// this shouldn't be hardcoded, but for testing
-// 	// we are keeping it in this way
-// 	// inputOptions.ReadStdin = false
-
-// 	// Parse positional arguments
-// 	in, err := input.ParseArgs(args, os.Stdin, &inputOptions)
-// 	if _, ok := errors.Cause(err).(*input.UsageError); ok {
-// 		usage.PrintUsage(os.Stderr)
-// 		return err
-// 	}
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	// Send request and receive response
-// 	status, err := Exchange(in, &exchangeOptions, &outputOptions, proxyURL,autoRedirect)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	if exchangeOptions.CheckStatus {
-// 		os.Exit(getExitStatus(status.StatusCode))
-// 	}
-
-// 	return nil
-// }
 
 func getExitStatus(statusCode int) int {
 	if 300 <= statusCode && statusCode < 600 {
@@ -219,9 +182,6 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	}
 	fmt.Println("Making HTTP request", request)
 	resp, err := httpClient.Do(request)
-	// resp.Header.Set("Access-Control-Allow-Origin", "*")
-	// resp.Header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-	// resp.Header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, User-Agent")
 
 	if err != nil {
 		fmt.Println(err)
@@ -231,10 +191,8 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	if outputOptions.PrintResponseHeader {
 		if err := printer.PrintStatusLine(resp.Proto, resp.Status, resp.StatusCode); err != nil {
 			fmt.Println(err)
-			// return ExResponse{-1, "", map[string]string{}}, err
 		}
 		if err := printer.PrintHeader(resp.Header); err != nil {
-			// return ExResponse{-1, "", map[string]string{}}, err
 			fmt.Println(err)
 		}
 		writer.Flush()
@@ -244,19 +202,16 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 		file := output.NewFileWriter(in.URL, outputOptions)
 
 		if err := printer.PrintDownload(resp.ContentLength, file.Filename()); err != nil {
-			// return ExResponse{-1, "", map[string]string{}}, err
 			fmt.Println(err)
 		}
 		writer.Flush()
 
 		if err = file.Download(resp); err != nil {
-			// return ExResponse{-1, "", map[string]string{}}, err
 			fmt.Println(err)
 		}
 	} else {
 		if outputOptions.PrintResponseBody {
 			if err := printer.PrintBody(resp.Body, resp.Header.Get("Content-Type")); err != nil {
-				// return ExResponse{-1, "", map[string]string{}}, err
 				fmt.Println(err)
 			}
 		}
