@@ -20,7 +20,7 @@ import (
 	"github.com/HexmosTech/httpie-go/input"
 	"github.com/HexmosTech/httpie-go/output"
 	"github.com/pkg/errors"
-	// "github.com/pkg/errors"
+
 )
 
 type Options struct {
