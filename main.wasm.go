@@ -10,23 +10,17 @@ import (
 	"io"
 	"syscall/js"
 
-	// "syscall/js"
-
-	// "io"
 	"net/http"
 	"net/http/httputil"
 	"os"
 	"strconv"
 
-	// "errors"
-	// "fmt"
 	"github.com/HexmosTech/httpie-go/exchange"
 	"github.com/HexmosTech/httpie-go/flags"
 	"github.com/HexmosTech/httpie-go/input"
 	"github.com/HexmosTech/httpie-go/output"
 	"github.com/pkg/errors"
 	// "github.com/pkg/errors"
-	// "syscall/js"
 )
 
 type Options struct {
