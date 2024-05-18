@@ -9,7 +9,6 @@ import (
 func TestLama2Entry(t *testing.T) {
 	// Example command line arguments
 	cmdArgs := []string{"ht", "get", "https://google.com"}
-	// cmdArgs := []string{"GET", "https://httpbin.org/get"}
 
 	// Example stdin input
 	stdinBody := strings.NewReader("")

@@ -118,10 +118,6 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	// Prepare printer
 	writer := bufio.NewWriter(os.Stdout)
 	defer writer.Flush()
-
-	// var bodyPlainBuffer bytes.Buffer
-	// mWriter := io.MultiWriter(writer, &bodyPlainBuffer)
-
 	printer := output.NewPrinter(writer, outputOptions)
 	// Build HTTP request
 	request, err := exchange.BuildHTTPRequest(in, exchangeOptions)

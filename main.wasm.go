@@ -100,14 +100,8 @@ func getExitStatus(statusCode int) int {
 
 func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions *output.Options, proxyURL string, proxyUsername string, proxyPassword string, autoRedirect bool) (ExResponse, error) {
 	// Prepare printer
-	fmt.Println("inside exchange Function")
 	writer := bufio.NewWriter(os.Stdout)
 	defer writer.Flush()
-
-	fmt.Println("Proxy params:", proxyURL)
-	// var bodyPlainBuffer bytes.Buffer
-	// mWriter := io.MultiWriter(writer, &bodyPlainBuffer)
-
 	printer := output.NewPrinter(writer, outputOptions)
 	// Build HTTP request
 	request, err := exchange.BuildHTTPRequest(in, exchangeOptions)
@@ -117,18 +111,15 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	}
 	username := "proxyServer"
 	password := "proxy22523146server"
-	// auth := "proxyServer:proxy22523146server"
-
 	auth := fmt.Sprintf("%s:%s", username, password)
 	basic := "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
-
 	request.Header.Add("proxyauth", basic)
 	cookieValue := request.Header.Get("Cookie")
 	if cookieValue != "" {
 		request.Header.Add("CustomCookie", cookieValue)
 	}
-
 	request.RequestURI = ""
+	
 	// Print HTTP request
 	if outputOptions.PrintRequestHeader || outputOptions.PrintRequestBody {
 		// `request` does not contain HTTP headers that HttpClient.Do adds.
