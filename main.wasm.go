@@ -20,7 +20,6 @@ import (
 	"github.com/HexmosTech/httpie-go/input"
 	"github.com/HexmosTech/httpie-go/output"
 	"github.com/pkg/errors"
-
 )
 
 type Options struct {
@@ -60,12 +59,6 @@ func Lama2Entry(cmdArgs []string, stdinBody io.Reader, proxyURL string, proxyUse
 	exchangeOptions := optionSet.ExchangeOptions
 	exchangeOptions.Transport = options.Transport
 	outputOptions := optionSet.OutputOptions
-
-	// this shouldn't be hardcoded, but for testing
-	// we are keeping it in this way
-	// inputOptions.ReadStdin = true
-
-	// Parse positional arguments
 	in, err := input.ParseArgs(args, stdinBody, &inputOptions)
 	if _, ok := errors.Cause(err).(*input.UsageError); ok {
 		usage.PrintUsage(os.Stderr)
@@ -89,7 +82,6 @@ func Lama2Entry(cmdArgs []string, stdinBody io.Reader, proxyURL string, proxyUse
 
 	return status, nil
 }
-
 
 func getExitStatus(statusCode int) int {
 	if 300 <= statusCode && statusCode < 600 {
@@ -119,7 +111,7 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 		request.Header.Add("CustomCookie", cookieValue)
 	}
 	request.RequestURI = ""
-	
+
 	// Print HTTP request
 	if outputOptions.PrintRequestHeader || outputOptions.PrintRequestBody {
 		// `request` does not contain HTTP headers that HttpClient.Do adds.
@@ -164,7 +156,7 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	}
 
 	// Send HTTP request and receive HTTP request
-	httpClient, err := exchange.BuildHTTPClient(exchangeOptions, proxyURL, proxyUsername, proxyPassword, autoRedirect, request)
+	httpClient, err := exchange.BuildHTTPClient(exchangeOptions, autoRedirect)
 	if err != nil {
 		fmt.Println(err)
 		return ExResponse{-1, "", map[string]string{}}, err

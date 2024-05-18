@@ -41,12 +41,6 @@ func Lama2Entry(cmdArgs []string, stdinBody io.Reader) (ExResponse, error) {
 	exchangeOptions := optionSet.ExchangeOptions
 	exchangeOptions.Transport = options.Transport
 	outputOptions := optionSet.OutputOptions
-
-	// this shouldn't be hardcoded, but for testing
-	// we are keeping it in this way
-	// inputOptions.ReadStdin = true
-
-	// Parse positional arguments
 	in, err := input.ParseArgs(args, stdinBody, &inputOptions)
 	if _, ok := errors.Cause(err).(*input.UsageError); ok {
 		usage.PrintUsage(os.Stderr)

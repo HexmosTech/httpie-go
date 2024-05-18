@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func BuildHTTPClient(options *Options, proxyURL string, proxyUsername string, proxyPassword string, autoRedirect bool, request *http.Request) (*http.Client, error) {
+func BuildHTTPClient(options *Options, autoRedirect bool) (*http.Client, error) {
 	var checkRedirect func(req *http.Request, via []*http.Request) error
 
 	if autoRedirect {
