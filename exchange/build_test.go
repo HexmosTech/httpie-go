@@ -1,4 +1,3 @@
-//go:build cli
 
 package exchange
 

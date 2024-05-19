@@ -2,7 +2,6 @@ package input
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/url"

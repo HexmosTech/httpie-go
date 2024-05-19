@@ -3,7 +3,6 @@
 package exchange
 
 import (
-	"fmt"
 	"net/http"
 )
 

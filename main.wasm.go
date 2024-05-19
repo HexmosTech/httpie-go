@@ -180,16 +180,8 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	}
 
 	if outputOptions.Download {
-		file := output.NewFileWriter(in.URL, outputOptions)
-
-		if err := printer.PrintDownload(resp.ContentLength, file.Filename()); err != nil {
-			fmt.Println(err)
-		}
-		writer.Flush()
-
-		if err = file.Download(resp); err != nil {
-			fmt.Println(err)
-		}
+		// TODO: File operations are not supported in wasm
+		fmt.Println("File operations are not available.")
 	} else {
 		if outputOptions.PrintResponseBody {
 			if err := printer.PrintBody(resp.Body, resp.Header.Get("Content-Type")); err != nil {

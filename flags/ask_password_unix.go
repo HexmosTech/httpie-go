@@ -1,4 +1,4 @@
-// +build !wasm
+//go:build !windows
 
 package flags
 

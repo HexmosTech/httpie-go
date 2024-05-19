@@ -1,24 +1,17 @@
-//go:build wasm
+//go:build cli
 
 package exchange
 
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/HexmosTech/httpie-go/input"
+	"github.com/HexmosTech/httpie-go/version"
 )
 
 func BuildHTTPRequest(in *input.Input, options *Options) (*http.Request, error) {
 	u, err := buildURL(in)
-	if err != nil {
-		return nil, err
-	}
-
-	uString := fmt.Sprintf("%s%s", "https://proxyserver.hexmos.com/", u.String())
-
-	modifiedURL, err := url.Parse(uString)
 	if err != nil {
 		return nil, err
 	}
@@ -37,12 +30,12 @@ func BuildHTTPRequest(in *input.Input, options *Options) (*http.Request, error) 
 		header.Set("Content-Type", bodyTuple.contentType)
 	}
 	if header.Get("User-Agent") == "" {
-		header.Set("User-Agent", `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36`)
+		header.Set("User-Agent", fmt.Sprintf("httpie-go/%s", version.Current()))
 	}
 
 	r := http.Request{
 		Method:        string(in.Method),
-		URL:           modifiedURL,
+		URL:           u,
 		Header:        header,
 		Host:          header.Get("Host"),
 		Body:          bodyTuple.body,
