@@ -14,7 +14,7 @@ func TestLama2Entry(t *testing.T) {
 	stdinBody := strings.NewReader("")
 
 	// Example proxy parameters
-	proxyURL := "http://proxyserver.hexmos.com:8080/"
+	proxyURL := "https://proxyserver.hexmos.com/"	
 	proxyUsername := "proxyServer"
 	proxyPassword := "proxy22523146server"
 

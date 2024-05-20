@@ -11,12 +11,12 @@ import (
 )
 
 func BuildHTTPRequest(in *input.Input, options *Options) (*http.Request, error) {
-	u, err := buildURL(in)
+	originalURL, err := buildURL(in)
 	if err != nil {
 		return nil, err
 	}
-
-	uString := fmt.Sprintf("%s%s", "https://proxyserver.hexmos.com/", u.String())
+	proxyURL := "https://proxyserver.hexmos.com/"
+	uString := fmt.Sprintf("%s%s", proxyURL, originalURL.String())
 
 	modifiedURL, err := url.Parse(uString)
 	if err != nil {
