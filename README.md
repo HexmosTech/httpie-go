@@ -91,7 +91,7 @@ If there is an `!` mark then it means the `not` operation on the build tags.
 ```go
 //go:build !windows
 ```
-This will exclude the file if a `windows` build tag is used.
+This will exclude the file if a `windows` build tag is used.(eg: while building for unix based systems) 
 
 Here we have `wasm` and `cli` build tags to switch between wasm and cli builds.
 

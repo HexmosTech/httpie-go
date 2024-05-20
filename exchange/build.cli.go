@@ -11,7 +11,7 @@ import (
 )
 
 func BuildHTTPRequest(in *input.Input, options *Options) (*http.Request, error) {
-	u, err := buildURL(in)
+	originalURL, err := buildURL(in)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func BuildHTTPRequest(in *input.Input, options *Options) (*http.Request, error) 
 
 	r := http.Request{
 		Method:        string(in.Method),
-		URL:           u,
+		URL:           originalURL,
 		Header:        header,
 		Host:          header.Get("Host"),
 		Body:          bodyTuple.body,
