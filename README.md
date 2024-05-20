@@ -94,3 +94,48 @@ If there is an `!` mark then it means the `not` operation on the build tags.
 This will exclude the file if a `windows` build tag is used.
 
 Here we have `wasm` and `cli` build tags to switch between wasm and cli builds.
+
+`//+build` is the older syntax for build tags, it's still recognized in Go. You can convert these statements into new syntax using `gofmt` command.
+
+## platform related build tags.
+
+**Example:**
+
+```go
+//go:build (linux && 386) || (darwin && !cgo)
+```
+This means the file will be included if the target is either "linux" with "386" architecture or "darwin" without "cgo".
+
+#### Environment Variables
+
+- **GOOS**: Sets the target operating system.
+- **GOARCH**: Sets the target architecture.
+
+During a build, the following tags are considered:
+
+- **Target OS**: Defined by `runtime.GOOS` (set by `GOOS`).
+- **Target Architecture**: Defined by `runtime.GOARCH` (set by `GOARCH`).
+- **Architecture Features**: For example, "amd64.v2".
+- **"unix"**: If `GOOS` is a Unix-like system.
+- **Compiler**: Either "gc" or "gccgo".
+- **"cgo"**: If `cgo` is supported (set by `CGO_ENABLED`).
+- **Go Version**: Tags like "go1.1", "go1.12", etc.
+- **Custom Tags**: Provided by the `-tags` flag.
+
+#### Implicit Build Constraints
+Files can have implicit build constraints based on their names:
+
+- **\*_GOOS**
+- **\*_GOARCH**
+- **\*_GOOS_GOARCH**
+
+For example, `source_windows_amd64.go` is implicitly constrained to `GOOS=windows` and `GOARCH=amd64`.
+
+#### Special Cases
+- **GOOS=android**: Matches tags and files for both `GOOS=linux` and `android`.
+- **GOOS=illumos**: Matches tags and files for both `GOOS=solaris` and `illumos`.
+- **GOOS=ios**: Matches tags and files for both `GOOS=darwin` and `ios`.
+
+This ensures compatibility and proper inclusion of files for these specific platforms.
+
+By using these build tags and environment variables, you can control the inclusion of files in your Go package based on the target platform.
