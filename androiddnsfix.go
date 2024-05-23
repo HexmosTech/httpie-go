@@ -1,4 +1,4 @@
-// +build androiddnsfix
+//go:build androiddnsfix
 
 package httpie
 

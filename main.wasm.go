@@ -1,15 +1,19 @@
-//go:build cli
+//go:build wasm
 
 package httpie
 
 import (
 	"bufio"
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"io"
+	"syscall/js"
+
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"strconv"
 
 	"github.com/HexmosTech/httpie-go/exchange"
 	"github.com/HexmosTech/httpie-go/flags"
@@ -30,11 +34,25 @@ type ExResponse struct {
 	Headers    map[string]string
 }
 
-func Lama2Entry(cmdArgs []string, stdinBody io.Reader) (ExResponse, error) {
-	// Parse flags
+func getStringSlice(jsArray js.Value) []string {
+	length := jsArray.Length()
+	slice := make([]string, length)
+	for i := 0; i < length; i++ {
+		slice[i] = jsArray.Index(i).String()
+	}
+	return slice
+}
+
+func Int(i int) int {
+	i, _ = strconv.Atoi(strconv.Itoa(i))
+	return i
+}
+
+func Lama2Entry(cmdArgs []string, stdinBody io.Reader, proxyURL string, proxyUsername string, proxyPassword string, autoRedirect bool) (ExResponse, error) {
 	options := Options{}
 	args, usage, optionSet, err := flags.Parse(cmdArgs)
 	if err != nil {
+		fmt.Println(err)
 		return ExResponse{}, err
 	}
 	inputOptions := optionSet.InputOptions
@@ -47,12 +65,14 @@ func Lama2Entry(cmdArgs []string, stdinBody io.Reader) (ExResponse, error) {
 		return ExResponse{}, err
 	}
 	if err != nil {
+		fmt.Println(err)
 		return ExResponse{}, err
 	}
 
 	// Send request and receive response
-	status, err := Exchange(in, &exchangeOptions, &outputOptions)
+	status, err := Exchange(in, &exchangeOptions, &outputOptions, proxyURL, proxyUsername, proxyPassword, autoRedirect)
 	if err != nil {
+		fmt.Println(err)
 		return ExResponse{}, err
 	}
 
@@ -63,44 +83,6 @@ func Lama2Entry(cmdArgs []string, stdinBody io.Reader) (ExResponse, error) {
 	return status, nil
 }
 
-func Main(options *Options) error {
-	// Parse flags
-	args, usage, optionSet, err := flags.Parse(os.Args)
-	if err != nil {
-		return err
-	}
-	inputOptions := optionSet.InputOptions
-	exchangeOptions := optionSet.ExchangeOptions
-	exchangeOptions.Transport = options.Transport
-	outputOptions := optionSet.OutputOptions
-
-	// this shouldn't be hardcoded, but for testing
-	// we are keeping it in this way
-	// inputOptions.ReadStdin = false
-
-	// Parse positional arguments
-	in, err := input.ParseArgs(args, os.Stdin, &inputOptions)
-	if _, ok := errors.Cause(err).(*input.UsageError); ok {
-		usage.PrintUsage(os.Stderr)
-		return err
-	}
-	if err != nil {
-		return err
-	}
-
-	// Send request and receive response
-	status, err := Exchange(in, &exchangeOptions, &outputOptions)
-	if err != nil {
-		return err
-	}
-
-	if exchangeOptions.CheckStatus {
-		os.Exit(getExitStatus(status.StatusCode))
-	}
-
-	return nil
-}
-
 func getExitStatus(statusCode int) int {
 	if 300 <= statusCode && statusCode < 600 {
 		return statusCode / 100
@@ -108,7 +90,7 @@ func getExitStatus(statusCode int) int {
 	return 0
 }
 
-func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions *output.Options) (ExResponse, error) {
+func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions *output.Options, proxyURL string, proxyUsername string, proxyPassword string, autoRedirect bool) (ExResponse, error) {
 	// Prepare printer
 	writer := bufio.NewWriter(os.Stdout)
 	defer writer.Flush()
@@ -116,8 +98,19 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	// Build HTTP request
 	request, err := exchange.BuildHTTPRequest(in, exchangeOptions)
 	if err != nil {
+		fmt.Println(err)
 		return ExResponse{-1, "", map[string]string{}}, err
 	}
+	username := "proxyServer"
+	password := "proxy22523146server"
+	auth := fmt.Sprintf("%s:%s", username, password)
+	basic := "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
+	request.Header.Add("proxyauth", basic)
+	cookieValue := request.Header.Get("Cookie")
+	if cookieValue != "" {
+		request.Header.Add("CustomCookie", cookieValue)
+	}
+	request.RequestURI = ""
 
 	// Print HTTP request
 	if outputOptions.PrintRequestHeader || outputOptions.PrintRequestBody {
@@ -125,10 +118,12 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 		// We can get these headers by DumpRequestOut and ReadRequest.
 		dump, err := httputil.DumpRequestOut(request, true)
 		if err != nil {
+			fmt.Println(err)
 			return ExResponse{-1, "", map[string]string{}}, err // should not happen
 		}
 		r, err := http.ReadRequest(bufio.NewReader(bytes.NewReader(dump)))
 		if err != nil {
+			fmt.Println(err)
 			return ExResponse{-1, "", map[string]string{}}, err // should not happen
 		}
 		defer r.Body.Close()
@@ -142,14 +137,17 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 
 		if outputOptions.PrintRequestHeader {
 			if err := printer.PrintRequestLine(r); err != nil {
+				fmt.Println(err)
 				return ExResponse{-1, "", map[string]string{}}, err
 			}
 			if err := printer.PrintHeader(r.Header); err != nil {
+				fmt.Println(err)
 				return ExResponse{-1, "", map[string]string{}}, err
 			}
 		}
 		if outputOptions.PrintRequestBody {
 			if err := printer.PrintBody(r.Body, r.Header.Get("Content-Type")); err != nil {
+				fmt.Println(err)
 				return ExResponse{-1, "", map[string]string{}}, err
 			}
 		}
@@ -158,41 +156,36 @@ func Exchange(in *input.Input, exchangeOptions *exchange.Options, outputOptions 
 	}
 
 	// Send HTTP request and receive HTTP request
-	httpClient, err := exchange.BuildHTTPClient(exchangeOptions)
+	httpClient, err := exchange.BuildHTTPClient(exchangeOptions, autoRedirect)
 	if err != nil {
+		fmt.Println(err)
 		return ExResponse{-1, "", map[string]string{}}, err
 	}
+	fmt.Println("Making HTTP request", request)
 	resp, err := httpClient.Do(request)
+
 	if err != nil {
-		return ExResponse{-1, "", map[string]string{}}, errors.Wrap(err, "sending HTTP request")
+		fmt.Println(err)
 	}
 	defer resp.Body.Close()
 
 	if outputOptions.PrintResponseHeader {
 		if err := printer.PrintStatusLine(resp.Proto, resp.Status, resp.StatusCode); err != nil {
-			return ExResponse{-1, "", map[string]string{}}, err
+			fmt.Println(err)
 		}
 		if err := printer.PrintHeader(resp.Header); err != nil {
-			return ExResponse{-1, "", map[string]string{}}, err
+			fmt.Println(err)
 		}
 		writer.Flush()
 	}
 
 	if outputOptions.Download {
-		file := output.NewFileWriter(in.URL, outputOptions)
-
-		if err := printer.PrintDownload(resp.ContentLength, file.Filename()); err != nil {
-			return ExResponse{-1, "", map[string]string{}}, err
-		}
-		writer.Flush()
-
-		if err = file.Download(resp); err != nil {
-			return ExResponse{-1, "", map[string]string{}}, err
-		}
+		// TODO: File operations are not supported in wasm
+		fmt.Println("File operations are not available.")
 	} else {
 		if outputOptions.PrintResponseBody {
 			if err := printer.PrintBody(resp.Body, resp.Header.Get("Content-Type")); err != nil {
-				return ExResponse{-1, "", map[string]string{}}, err
+				fmt.Println(err)
 			}
 		}
 	}
