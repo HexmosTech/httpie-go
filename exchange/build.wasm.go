@@ -15,7 +15,7 @@ func BuildHTTPRequest(in *input.Input, options *Options) (*http.Request, error) 
 	if err != nil {
 		return nil, err
 	}
-	proxyURL := "https://proxyserver.hexmos.com/"
+	proxyURL := "https://proxyserver.hexmos.com/proxy/"
 	uString := fmt.Sprintf("%s%s", proxyURL, originalURL.String())
 
 	modifiedURL, err := url.Parse(uString)
