@@ -15,8 +15,7 @@ func BuildHTTPRequest(in *input.Input, options *Options) (*http.Request, error) 
 	if err != nil {
 		return nil, err
 	}
-	proxyURL := "https://proxyserver.hexmos.com/proxy/"
-	uString := fmt.Sprintf("%s%s", proxyURL, originalURL.String())
+	uString := fmt.Sprintf("%s", "https://proxyserver.hexmos.com/proxy")
 
 	modifiedURL, err := url.Parse(uString)
 	if err != nil {
@@ -39,6 +38,7 @@ func BuildHTTPRequest(in *input.Input, options *Options) (*http.Request, error) 
 	if header.Get("User-Agent") == "" {
 		header.Set("User-Agent", `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36`)
 	}
+	header.Add("hex-url",originalURL.String())
 
 	r := http.Request{
 		Method:        string(in.Method),
