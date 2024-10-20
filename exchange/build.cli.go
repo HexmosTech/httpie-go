@@ -26,7 +26,7 @@ func BuildHTTPRequest(in *input.Input, options *Options) (*http.Request, error) 
 		return nil, err
 	}
 
-	if header.Get("Content-Type") == "" && bodyTuple.contentType != "" {
+	if header.Get("Content-Type") == "" && bodyTuple.contentType != "" && string(in.Method) != "GET" {
 		header.Set("Content-Type", bodyTuple.contentType)
 	}
 	if header.Get("User-Agent") == "" {
